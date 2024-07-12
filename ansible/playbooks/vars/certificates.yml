@@ -1,0 +1,2 @@
+ssl_certificate_path: /opt/certs/rafaeldecarvalho.com.pem
+ssl_certificate_key_path: /opt/certs/rafaeldecarvalho.com.key

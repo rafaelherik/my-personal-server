@@ -1,0 +1,13 @@
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name {{ item.domain }};
+
+    ssl_certificate {{ ssl_certificate_path }};
+    ssl_certificate_key {{ ssl_certificate_key_path }};
+
+    location / {
+        proxy_pass http://127.0.0.1:{{ item.application_port }};
+        include proxy_params;
+    }
+}

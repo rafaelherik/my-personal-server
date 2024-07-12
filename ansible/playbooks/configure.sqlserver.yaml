@@ -1,0 +1,90 @@
+- name: Configure SQL Server to run in containers as a systemd service
+  hosts: server
+  
+  collections:
+    - community.hashi_vault
+  tasks:
+
+    - name: Create mssql group
+      become: true
+      group:
+        name: mssql
+        state: present
+
+    - name: Create mssql user
+      become: true
+      user:
+        name: mssql
+        group: mssql
+        state: present
+
+    - name: Retrieve SA password from Vault
+      delegate_to: localhost
+      community.hashi_vault.vault_kv1_get:
+        url: "{{ vault_server }}"
+        path: /data/infrastructure/sqlserver
+        token: "{{ lookup('env', 'VAULT_TOKEN') }}"
+      register: response
+
+    - name: Set Required variables
+      set_fact:
+        sa_password: "{{ response.data.data.sa_password }}"
+        service_name: sqlserver
+        service_directory: /opt/sqlserver
+
+    - name: Show the SA password
+      debug:
+        var: response.data.data.sa_password
+    - name: Create the folder
+      become: true
+      file:
+        path: /opt/sqlserver
+        state: directory
+
+    - name: Copy Docker Compose file
+      become: true
+      copy:
+        src: files/sqlserver/docker-compose.yml
+        dest: /opt/sqlserver/docker-compose.yml
+
+    - name: Copy environment file
+      become: true
+      template:
+        src: files/sqlserver/.sql.env.j2
+        dest: /opt/sqlserver/.sql.env
+    
+    
+    - name: Create the SQL Server data directory
+      become: true
+      file:
+        path: /opt/sqlserver/data
+        state: directory
+        owner: 10001
+        group: root
+        mode: '0755'
+
+    - name: Create the systemd service
+      become: true
+      template:
+        src: templates/docker@.service.j2
+        dest: /etc/systemd/system/docker@sqlserver.service
+
+    - name: Stop Sql Server service
+      become: true
+      systemd:
+        name: docker@sqlserver.service
+        state: stopped
+
+    - name: Load Vault service
+      become: true
+      systemd:
+        name: docker@sqlserver.service
+        daemon_reload: yes
+        state: reloaded
+        
+    - name: Start Vault service
+      become: true
+      systemd:
+        name: docker@sqlserver.service
+        state: started
+        enabled: true

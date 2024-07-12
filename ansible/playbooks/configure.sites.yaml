@@ -1,0 +1,21 @@
+- name: Configure Nginx sites
+  hosts: server
+  become: true
+
+  vars_files:
+    - websites.yml
+    - certificates.yml
+
+  tasks:
+    - name: Create Nginx sites-available configuration
+      template:
+        src: nginx_site.conf.j2
+        dest: /etc/nginx/sites-available/{{ item.name }}
+      with_items: "{{ websites }}"
+
+    - name: Create symlink to sites-enabled
+      file:
+        src: /etc/nginx/sites-available/{{ item.name }}
+        dest: /etc/nginx/sites-enabled/{{ item.name }}
+        state: link
+      with_items: "{{ websites }}"

@@ -1,0 +1,13 @@
+websites:
+  - name: rafaeldecarvalho.com
+    domain: rafaeldecarvalho.com    
+    application_port: 8000
+  - name: auth.rafaeldecarvalho.com
+    domain: auth.rafaeldecarvalho.com.com
+    application_port: 8081
+  - name: finance.rafaeldecarvalho.com
+    domain: finance.rafaeldecarvalho.com
+    application_port: 8080
+  - name: reg.rafaeldecarvalho.com
+    domain: reg.rafaeldecarvalho.com
+    application_port: 8002
